@@ -1,6 +1,7 @@
 name: Build Flutter APK
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -17,6 +18,11 @@ jobs:
         run: |
           unzip EL_JOE_Complete_Project.zip
 
+      - name: Locate Flutter Project
+        run: |
+          MOBILE_DIR=$(find . -maxdepth 4 -type d -name "mobile" | head -n 1)
+          echo "MOBILE_PATH=$MOBILE_DIR" >> $GITHUB_ENV
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -31,16 +37,16 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd EL_JOE_Project/mobile
+          cd ${{ env.MOBILE_PATH }}
           flutter pub get
 
       - name: Build APK
         run: |
-          cd EL_JOE_Project/mobile
+          cd ${{ env.MOBILE_PATH }}
           flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: EL_JOE_Project/mobile/build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ env.MOBILE_PATH }}/build/app/outputs/flutter-apk/app-release.apk
